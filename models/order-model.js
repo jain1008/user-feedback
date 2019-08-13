@@ -2,7 +2,6 @@ var connection = require('../dbconnection')
 var HttpStatus = require('http-status-codes')
 
 checkOrderExits = (order_id, callback) => {
-    console.log('SELECT count(1) as count FROM uc_orders where order_id = ' + parseInt(order_id))
     connection.query('SELECT count(1) as count FROM uc_orders where order_id = ' + parseInt(order_id), function (err, rows, fields) {
         if (err) {
             callback(false)
@@ -15,6 +14,21 @@ checkOrderExits = (order_id, callback) => {
         }
     });
 }
+
+checkOrderCommentExits = (order_id, callback) => {    
+    connection.query('SELECT count(1) as count FROM order_feedback where order_id = ' + parseInt(order_id), function (err, rows, fields) {
+        if (err) {
+            callback(false)
+        } else {
+            if (rows[0].count > 0) {
+                callback(false)
+            } else {
+                callback(true)
+            }
+        }
+    });
+}
+
 
 getOrderProducts = (order_id) => {
     if (parseInt(order_id)) {

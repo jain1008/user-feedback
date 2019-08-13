@@ -78,12 +78,21 @@ router.post('/save-feedback', (req, res, next) => {
     }
     checkOrderExits(req.body.order_id, async (req_response) => {
         if (req_response == true) {
-            await saveOrderFeedback(req.body).then(req_result => {
-                if (req_result.code == HttpStatus.OK) {
-                    rms.sendResponse(res, req_result.code, req_result.data)
-                    return;
+            checkOrderCommentExits(req.body.order_id, async (req_response) => {
+                if(req_response === true){
+                    await saveOrderFeedback(req.body).then(req_result => {
+                        if (req_result.code == HttpStatus.OK) {
+                            rms.sendResponse(res, req_result.code, req_result.data)
+                            return                        
+                        }else{
+                            rms.sendResponse(res, req_result.code, req_result.data,'Order Commnet Exists')
+                            return        
+                        }
+                    })
+                }else{
+                    rms.sendResponse(res, HttpStatus.OK, [],'Order Commnet Exists')
                 }
-            })
+            })            
         }else{
             rms.sendResponse(res, req_result.code, req_result.data,'Order not found')
         }
