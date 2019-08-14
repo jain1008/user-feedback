@@ -5,7 +5,7 @@ checkOrderExits = (order_id, callback) => {
     connection.query('SELECT count(1) as count FROM uc_orders where order_id = ' + parseInt(order_id), function (err, rows, fields) {
         if (err) {
             callback(false)
-        } else {
+        } else {            
             if (rows[0].count > 0) {
                 callback(true)
             } else {
@@ -43,12 +43,12 @@ getOrderProducts = (order_id) => {
                                 if (rows.length > 0) {
                                     resolve({ "code": HttpStatus.OK, "data": rows })
                                 } else {
-                                    resolve({ "code": HttpStatus.NOT_FOUND, "data": [] })
+                                    resolve({ "code": HttpStatus.NOT_FOUND, "data": [],"msg":"No product found" })
                                 }
                             }
                         });
                     } else {
-                        resolve({ "code": HttpStatus.OK, "data": [], "msg": "Order not found" })
+                        resolve({ "code": HttpStatus.NOT_FOUND, "data": [], "msg": "Order not found" })
                     }
                 })
             } catch (err) {
@@ -85,9 +85,7 @@ updateOrderFeedback = (data, order_id) => {
         }
         let setStr = str.slice(0, -1)
         let query = 'UPDATE  order_feedback set ' + setStr + ' where order_id = ' + order_id
-        console.log(query)
         connection.query(query, function (err, result) {
-            console.log(result.affectedRows)
             if (result.affectedRows) {
                 resolve({ "code": HttpStatus.OK, "data": [] })
             } else {

@@ -9,7 +9,7 @@ exports.sendResponse = (res, responseCode, data, msg = '') => {
             res.status(responseCode).send({ status: responseCode, data: data ? data : [], 'msg': SERVER_ERROR })
             break;
         case HttpStatus.NOT_FOUND:
-            res.status(responseCode).send({ status: responseCode, data: data ? data : [], 'msg': NOT_FOUND })
+            res.status(responseCode).send({ status: responseCode, data: data ? data : [], 'msg': msg ? msg :NOT_FOUND })
             break;
         case HttpStatus.BAD_REQUEST:
             res.status(responseCode).send({ status: responseCode, data: data ? data : [], 'msg': msg ? msg : WRONG })

@@ -1,7 +1,4 @@
 var router = require('express').Router();
-var order_model = require('../../models/order-model')
-var comment_model = require('../../models/comment-model')
-var Joi = require('../../validate-data')
 var HttpStatus = require('http-status-codes')
 var rms = require('../../response_msg')
 var CONSTANTS = require('../../constants')
@@ -34,7 +31,6 @@ router.get('/comments-list/:status', async (req, res, next) => {
                 }
                 rms.sendResponse(res, req_response.code, Object.values(response))
             }
-
         })
     }
 });
@@ -44,10 +40,11 @@ router.get('/product-list/:order_id', async (req, res, next) => {
         rms.sendResponse(res, HttpStatus.BAD_REQUEST, [], 'Invalid Order ID')
         return;
     } else {
-        getOrderProducts(req.params.order_id).then(function (req_response) {
+        await getOrderProducts(req.params.order_id).then(function (req_response) {
+            console.log(req_response)
             if (req_response.code != HttpStatus.OK) {
-                rms.sendResponse(res, req_response.code, [])
-                return;
+                rms.sendResponse(res, req_response.code, [],req_response.msg)
+                return
             } else {
                 if (req_response.data.length > 0) {
                     req_response.data.forEach(element => {
@@ -56,11 +53,11 @@ router.get('/product-list/:order_id', async (req, res, next) => {
                         }
                     });
                     rms.sendResponse(res, req_response.code, Object.values(req_response.data), req_response.msg)
+                    return
                 }
             }
         })
     }
-
 });
 
 router.post('/save-feedback', (req, res, next) => {
@@ -76,10 +73,11 @@ router.post('/save-feedback', (req, res, next) => {
         res.status(HttpStatus.OK).send({ 'status': HttpStatus.BAD_REQUEST, data: [], msg: error.details[0].message });
         return;
     }
-    checkOrderExits(req.body.order_id, async (req_response) => {
+    checkOrderExits(req.body.order_id,(req_response) => {
         if (req_response == true) {
-            checkOrderCommentExits(req.body.order_id, async (req_response) => {
-                if(req_response === true){
+            checkOrderCommentExits(req.body.order_id, async (response1) => {
+                console.log('b')
+                if(response1 === true){
                     await saveOrderFeedback(req.body).then(req_result => {
                         if (req_result.code == HttpStatus.OK) {
                             rms.sendResponse(res, req_result.code, req_result.data)
@@ -91,10 +89,11 @@ router.post('/save-feedback', (req, res, next) => {
                     })
                 }else{
                     rms.sendResponse(res, HttpStatus.OK, [],'Order Commnet Exists')
+                    return
                 }
             })            
         }else{
-            rms.sendResponse(res, req_result.code, req_result.data,'Order not found')
+            res.status(HttpStatus.NOT_FOUND).send({ status: HttpStatus.NOT_FOUND, data: [], 'msg': 'Order not found' })
         }
     });
 });
